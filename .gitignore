@@ -1,0 +1,28 @@
+# Node / React frontend
+node_modules/
+dist/
+build/
+.env
+.env.*
+!.env.example
+npm-debug.log*
+
+# Terraform / IaC (将来追加する場合に備えて)
+*.tfstate
+*.tfstate.*
+.terraform/
+crash.log
+*.tfvars
+!*.tfvars.example
+
+# AWS
+.aws-sam/
+*.pem
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
