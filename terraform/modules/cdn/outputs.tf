@@ -17,3 +17,8 @@ output "cloudfront_distribution_id" {
   description = "CloudFrontディストリビューションID"
   value       = aws_cloudfront_distribution.knowledge_contents.id
 }
+
+output "cloudfront_distribution_arn" {
+  description = "CloudFrontディストリビューションARN（IAMポリシーでのリソース指定に使用）"
+  value       = aws_cloudfront_distribution.knowledge_contents.arn
+}

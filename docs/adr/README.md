@@ -22,3 +22,4 @@
 | [0002](./0002-use-terraform-for-infra.md) | インフラ管理にTerraformを使う | Accepted |
 | [0003](./0003-split-modules-by-function.md) | モジュールを機能単位で分割する | Accepted |
 | [0004](./0004-use-tokyo-region.md) | リージョンは東京（ap-northeast-1）を採用する | Accepted |
+| [0005](./0005-use-oidc-for-github-actions.md) | GitHub ActionsからAWSへの接続はOIDCで行う | Accepted |
