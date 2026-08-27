@@ -23,3 +23,5 @@
 | [0003](./0003-split-modules-by-function.md) | モジュールを機能単位で分割する | Accepted |
 | [0004](./0004-use-tokyo-region.md) | リージョンは東京（ap-northeast-1）を採用する | Accepted |
 | [0005](./0005-use-oidc-for-github-actions.md) | GitHub ActionsからAWSへの接続はOIDCで行う | Accepted |
+| [0006](./0006-cognito-admin-only-signup.md) | Cognitoの自己サインアップを無効化し、管理者作成のみとする | Accepted |
+| [0007](./0007-cognito-spa-direct-auth-no-hosted-ui.md) | Cognito Hosted UIは使わず、SPAからSRP認証で直接呼び出す | Accepted |
