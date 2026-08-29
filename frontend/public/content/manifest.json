@@ -1,0 +1,32 @@
+[
+  {
+    "id": "ra-hazard-decomposition",
+    "title": "危険源→危険状態→危険事象→災害",
+    "category": "risk-assessment",
+    "section": "official",
+    "tags": ["思想", "基礎"],
+    "updated": "2026-07-29",
+    "path": "official/risk-assessment/ra-hazard-decomposition.md",
+    "searchText": "危険源 危険状態 危険事象 災害 の連鎖を分解して考える思想"
+  },
+  {
+    "id": "ra-risk-level-table",
+    "title": "リスクレベル判定基準（3体系）",
+    "category": "risk-assessment",
+    "section": "official",
+    "tags": ["評価基準"],
+    "updated": "2026-07-29",
+    "path": "official/risk-assessment/ra-risk-level-table.md",
+    "searchText": "リスクレベル 判定基準 重大性 頻度 マトリクス 記録シート 添付"
+  },
+  {
+    "id": "personal-note-example",
+    "title": "旋盤作業の勘所メモ",
+    "category": "machining",
+    "section": "personal",
+    "tags": ["個人メモ", "旋盤"],
+    "updated": "2026-08-10",
+    "path": "personal/machining/note-example.md",
+    "searchText": "旋盤 チャック 巻き込まれ 個人の経験則メモ"
+  }
+]
