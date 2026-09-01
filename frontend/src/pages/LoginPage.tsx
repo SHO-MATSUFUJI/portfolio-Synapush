@@ -3,7 +3,7 @@ import { Navigate } from 'react-router-dom'
 import { useAuth } from '../auth/AuthContext'
 
 export function LoginPage() {
-  const { isAuthenticated, login, loginAsGuest, loginAsDevPreview, error } = useAuth()
+  const { isAuthenticated, login, loginAsGuest, error } = useAuth()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -91,16 +91,6 @@ export function LoginPage() {
         >
           ゲストとしてログイン
         </button>
-
-        {import.meta.env.DEV && (
-          <button
-            type="button"
-            onClick={() => loginAsDevPreview?.()}
-            className="mt-3 w-full rounded-md border border-dashed border-amber-400 py-2 text-xs font-medium text-amber-600 dark:border-amber-600 dark:text-amber-400"
-          >
-            開発用：ログインをスキップしてプレビュー
-          </button>
-        )}
       </div>
     </div>
   )

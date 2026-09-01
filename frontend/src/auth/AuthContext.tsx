@@ -7,7 +7,6 @@ interface AuthContextValue {
   error: string | null
   login: (email: string, password: string) => Promise<void>
   loginAsGuest: () => Promise<void>
-  loginAsDevPreview?: () => void
   logout: () => void
 }
 
@@ -46,21 +45,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     await login(guestEmail, guestPassword)
   }, [login])
 
-  // Cognito未接続でも画面確認できるよう、開発ビルド限定でログインを素通りさせる。
-  // CloudFront側では未認証アクセスをまだ防いでいないため、isAuthenticatedを外部から
-  // 書き換えられるこの関数は、呼び出し口（ボタン）だけでなく定義自体を本番ビルドから除去する
-  const loginAsDevPreview = import.meta.env.DEV
-    ? () => {
-        setError(null)
-        setIsAuthenticated(true)
-      }
-    : undefined
-
   const logout = useCallback(() => {
     try {
       cognitoLogout()
     } catch {
-      // Cognito未接続（devプレビュー）でのログアウトは何もしなくてよい
+      // Cognito未設定の環境ではuserPool生成時にthrowするが、ログアウトは何もしなくてよい
     }
     setIsAuthenticated(false)
   }, [])
@@ -73,7 +62,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         error,
         login,
         loginAsGuest,
-        loginAsDevPreview,
         logout,
       }}
     >
