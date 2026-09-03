@@ -26,3 +26,6 @@ crash.log
 # OS
 .DS_Store
 Thumbs.db
+
+# CIが生成する成果物（正本ではない）。dev サーバーは vite.config.ts で動的生成する
+/content/manifest.json

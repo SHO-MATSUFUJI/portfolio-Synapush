@@ -1,0 +1,78 @@
+name: Deploy content
+
+# mainへのマージで content/ が変わったとき、manifest.json を再生成して
+# S3 に同期し、CloudFront のキャッシュを無効化する。
+# AWS への接続は OIDC（synapush-content-deploy ロールの AssumeRoleWithWebIdentity）。
+# PR 時は AWS アクセス不要のため対象外（信頼ポリシーも main ブランチに限定）。
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'content/**'
+      - 'scripts/generate-manifest.mjs'
+      - '.github/workflows/deploy-content.yml'
+  workflow_dispatch:
+
+permissions:
+  id-token: write # OIDC トークン発行に必要
+  contents: read
+
+concurrency:
+  group: deploy-content
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    env:
+      AWS_REGION: ${{ vars.AWS_REGION }}
+      S3_BUCKET: ${{ vars.S3_BUCKET }}
+      CLOUDFRONT_DISTRIBUTION_ID: ${{ vars.CLOUDFRONT_DISTRIBUTION_ID }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Check required repo variables
+        run: |
+          missing=0
+          for v in AWS_REGION S3_BUCKET CLOUDFRONT_DISTRIBUTION_ID; do
+            if [ -z "${!v}" ]; then echo "::error::repository variable $v is not set"; missing=1; fi
+          done
+          if [ -z "${{ vars.AWS_DEPLOY_ROLE_ARN }}" ]; then
+            echo "::error::repository variable AWS_DEPLOY_ROLE_ARN is not set"; missing=1
+          fi
+          [ "$missing" -eq 0 ]
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Generate manifest.json
+        run: node scripts/generate-manifest.mjs content content/manifest.json
+
+      - name: Configure AWS credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ vars.AWS_DEPLOY_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Sync content to S3
+        run: |
+          aws s3 sync content/ "s3://${S3_BUCKET}/content/" --delete --no-progress
+
+          # .md は dev サーバー（vite.config.ts）と同じ text/plain; charset=utf-8 に統一する
+          aws s3 cp "s3://${S3_BUCKET}/content/" "s3://${S3_BUCKET}/content/" \
+            --recursive --exclude "*" --include "*.md" \
+            --content-type "text/plain; charset=utf-8" \
+            --metadata-directive REPLACE --no-progress
+
+          aws s3 cp content/manifest.json "s3://${S3_BUCKET}/content/manifest.json" \
+            --content-type "application/json; charset=utf-8" --no-progress
+
+      - name: Invalidate CloudFront cache
+        run: |
+          aws cloudfront create-invalidation \
+            --distribution-id "${CLOUDFRONT_DISTRIBUTION_ID}" \
+            --paths "/content/*"
