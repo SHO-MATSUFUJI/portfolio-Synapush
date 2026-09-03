@@ -1,8 +1,11 @@
 # IAM OIDC: GitHub Actions（CD/mainマージ後のデプロイ）からAWSへ接続するためのロール
 
-resource "aws_iam_openid_connect_provider" "github_actions" {
-  url             = "https://token.actions.githubusercontent.com"
-  client_id_list  = ["sts.amazonaws.com"]
+# GitHub Actions用OIDCプロバイダはAWSアカウントごとに1つのシングルトン。
+# 既存のもの（他リポジトリのCI/CDと共用）を参照するだけにし、本プロジェクトでは
+# 作成・所有しない。これにより terraform destroy でアカウント共有のプロバイダを
+# 巻き込まず、他リポジトリのOIDC連携を壊さない。
+data "aws_iam_openid_connect_provider" "github_actions" {
+  url = "https://token.actions.githubusercontent.com"
 }
 
 data "aws_iam_policy_document" "content_deploy_trust" {
@@ -11,7 +14,7 @@ data "aws_iam_policy_document" "content_deploy_trust" {
 
     principals {
       type        = "Federated"
-      identifiers = [aws_iam_openid_connect_provider.github_actions.arn]
+      identifiers = [data.aws_iam_openid_connect_provider.github_actions.arn]
     }
 
     condition {
