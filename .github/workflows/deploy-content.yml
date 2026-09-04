@@ -39,8 +39,8 @@ jobs:
           for v in AWS_REGION S3_BUCKET CLOUDFRONT_DISTRIBUTION_ID; do
             if [ -z "${!v}" ]; then echo "::error::repository variable $v is not set"; missing=1; fi
           done
-          if [ -z "${{ vars.AWS_DEPLOY_ROLE_ARN }}" ]; then
-            echo "::error::repository variable AWS_DEPLOY_ROLE_ARN is not set"; missing=1
+          if [ -z "${{ secrets.AWS_DEPLOY_ROLE_ARN }}" ]; then
+            echo "::error::secret AWS_DEPLOY_ROLE_ARN is not set"; missing=1
           fi
           [ "$missing" -eq 0 ]
 
@@ -55,7 +55,7 @@ jobs:
       - name: Configure AWS credentials (OIDC)
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: ${{ vars.AWS_DEPLOY_ROLE_ARN }}
+          role-to-assume: ${{ secrets.AWS_DEPLOY_ROLE_ARN }}
           aws-region: ${{ env.AWS_REGION }}
 
       - name: Sync content to S3
