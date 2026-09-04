@@ -33,7 +33,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Check required repo variables
+      - name: Check required config
         run: |
           missing=0
           for v in AWS_REGION S3_BUCKET CLOUDFRONT_DISTRIBUTION_ID; do
