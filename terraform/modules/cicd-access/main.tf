@@ -49,8 +49,10 @@ data "aws_iam_policy_document" "content_deploy_permissions" {
   }
 
   statement {
-    sid       = "AllowSyncObjects"
-    actions   = ["s3:PutObject", "s3:DeleteObject"]
+    sid = "AllowSyncObjects"
+    # GetObject: content-typeをREPLACEするaws s3 cpの同一バケット内コピー（CopyObject）が
+    # 内部的にソース側のGetObjectを要求するため必要
+    actions   = ["s3:GetObject", "s3:PutObject", "s3:DeleteObject"]
     resources = ["${var.bucket_arn}/*"]
   }
 
