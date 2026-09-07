@@ -49,22 +49,42 @@ export function getCurrentSession(): Promise<CognitoUserSession | null> {
   })
 }
 
-export function login(email: string, password: string): Promise<CognitoUserSession> {
+export type LoginResult =
+  | { status: 'success'; session: CognitoUserSession }
+  | { status: 'newPasswordRequired'; cognitoUser: CognitoUser; userAttributes: Record<string, unknown> }
+
+export function login(email: string, password: string): Promise<LoginResult> {
   const cognitoUser = new CognitoUser({ Username: email, Pool: getUserPool() })
   const authDetails = new AuthenticationDetails({ Username: email, Password: password })
 
   return new Promise((resolve, reject) => {
     cognitoUser.authenticateUser(authDetails, {
-      onSuccess: (session) => resolve(session),
+      onSuccess: (session) => resolve({ status: 'success', session }),
       onFailure: (error) => reject(error),
       // 管理者作成直後のユーザーは仮パスワード状態のため、この分岐に入る
-      newPasswordRequired: () => {
-        reject(
-          new Error(
-            '初回ログインにはパスワード変更が必要です。管理者にお問い合わせください。',
-          ),
-        )
+      newPasswordRequired: (userAttributes, requiredAttributes) => {
+        // userAttributesは「既に設定済みの値」全体（email_verified等の読み取り専用属性を含む）。
+        // completeNewPasswordChallengeに渡してよいのは、requiredAttributes（まだ未設定で
+        // 入力が必要な属性）に列挙されたものだけ
+        const attributesToSubmit: Record<string, unknown> = {}
+        for (const key of requiredAttributes) {
+          if (key in userAttributes) attributesToSubmit[key] = userAttributes[key]
+        }
+        resolve({ status: 'newPasswordRequired', cognitoUser, userAttributes: attributesToSubmit })
       },
+    })
+  })
+}
+
+export function completeNewPassword(
+  cognitoUser: CognitoUser,
+  newPassword: string,
+  userAttributes: Record<string, unknown>,
+): Promise<CognitoUserSession> {
+  return new Promise((resolve, reject) => {
+    cognitoUser.completeNewPasswordChallenge(newPassword, userAttributes, {
+      onSuccess: (session) => resolve(session),
+      onFailure: (error) => reject(error),
     })
   })
 }
