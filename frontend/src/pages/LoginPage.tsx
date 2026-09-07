@@ -3,9 +3,13 @@ import { Navigate } from 'react-router-dom'
 import { useAuth } from '../auth/AuthContext'
 
 export function LoginPage() {
-  const { isAuthenticated, login, loginAsGuest, error } = useAuth()
+  const { isAuthenticated, isNewPasswordRequired, login, loginAsGuest, completeNewPassword, error } =
+    useAuth()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [newPassword, setNewPassword] = useState('')
+  const [newPasswordConfirm, setNewPasswordConfirm] = useState('')
+  const [confirmMismatch, setConfirmMismatch] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   if (isAuthenticated) return <Navigate to="/" replace />
@@ -31,6 +35,78 @@ export function LoginPage() {
     } finally {
       setIsSubmitting(false)
     }
+  }
+
+  async function handleNewPasswordSubmit(e: SubmitEvent) {
+    e.preventDefault()
+    if (newPassword !== newPasswordConfirm) {
+      setConfirmMismatch(true)
+      return
+    }
+    setConfirmMismatch(false)
+    setIsSubmitting(true)
+    try {
+      await completeNewPassword(newPassword)
+    } catch {
+      // エラーメッセージはuseAuthのerrorで表示するため、ここでは何もしない
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
+
+  if (isNewPasswordRequired) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-gray-50 dark:bg-gray-950">
+        <div className="w-full max-w-sm rounded-lg border border-gray-200 bg-white p-8 dark:border-gray-800 dark:bg-gray-900">
+          <h1 className="mb-2 text-xl font-semibold text-gray-900 dark:text-gray-100">
+            新しいパスワードの設定
+          </h1>
+          <p className="mb-6 text-sm text-gray-500 dark:text-gray-400">
+            初回ログインのため、新しいパスワードを設定してください。
+          </p>
+
+          <form onSubmit={handleNewPasswordSubmit} className="space-y-4">
+            <div>
+              <label className="mb-1 block text-sm text-gray-600 dark:text-gray-400">
+                新しいパスワード
+              </label>
+              <input
+                type="password"
+                required
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+                className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm outline-none focus:border-gray-500 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100"
+              />
+            </div>
+            <div>
+              <label className="mb-1 block text-sm text-gray-600 dark:text-gray-400">
+                新しいパスワード（確認）
+              </label>
+              <input
+                type="password"
+                required
+                value={newPasswordConfirm}
+                onChange={(e) => setNewPasswordConfirm(e.target.value)}
+                className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm outline-none focus:border-gray-500 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100"
+              />
+            </div>
+
+            {confirmMismatch && (
+              <p className="text-sm text-red-600 dark:text-red-400">パスワードが一致しません</p>
+            )}
+            {error && <p className="text-sm text-red-600 dark:text-red-400">{error}</p>}
+
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              className="w-full rounded-md bg-gray-900 py-2 text-sm font-medium text-white disabled:opacity-50 dark:bg-gray-100 dark:text-gray-900"
+            >
+              パスワードを設定
+            </button>
+          </form>
+        </div>
+      </div>
+    )
   }
 
   return (
