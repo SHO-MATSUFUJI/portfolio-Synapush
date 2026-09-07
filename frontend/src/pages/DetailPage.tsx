@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Link, Navigate, useParams } from 'react-router-dom'
+import { Link, Navigate, useLocation, useParams } from 'react-router-dom'
 import { Header } from '../components/Header'
 import { MarkdownRenderer } from '../components/MarkdownRenderer'
 import { useContent } from '../content/ContentContext'
@@ -7,9 +7,14 @@ import { stripFrontmatter } from '../content/stripFrontmatter'
 
 export function DetailPage() {
   const { id } = useParams<{ id: string }>()
+  const location = useLocation()
   const { entries, isLoading: isManifestLoading } = useContent()
   const [markdown, setMarkdown] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
+
+  // 一覧から遷移した場合は、遷移元のタブ・検索条件付きURLに戻す。
+  // 直接アクセス等でstateが無い場合は素の一覧に戻す
+  const backTo = (location.state as { from?: string } | null)?.from ?? '/'
 
   const entry = entries.find((e) => e.id === id)
 
@@ -40,7 +45,7 @@ export function DetailPage() {
     <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
       <Header />
       <main className="mx-auto max-w-3xl px-6 py-8">
-        <Link to="/" className="text-sm text-gray-500 hover:text-gray-900 dark:hover:text-gray-100">
+        <Link to={backTo} className="text-sm text-gray-500 hover:text-gray-900 dark:hover:text-gray-100">
           ← 一覧に戻る
         </Link>
 
