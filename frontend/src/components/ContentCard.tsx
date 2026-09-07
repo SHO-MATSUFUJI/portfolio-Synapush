@@ -1,10 +1,15 @@
-import { Link } from 'react-router-dom'
+import { Link, useLocation } from 'react-router-dom'
 import type { ManifestEntry } from '../types/content'
 
 export function ContentCard({ entry }: { entry: ManifestEntry }) {
+  const location = useLocation()
+
   return (
     <Link
       to={`/n/${entry.id}`}
+      // 一覧のタブ・検索条件（URLのクエリ文字列）を保持したまま、詳細ページの
+      // 「一覧に戻る」で同じ状態の一覧に戻れるようにする
+      state={{ from: `${location.pathname}${location.search}` }}
       className="block rounded-lg border border-gray-200 p-4 transition hover:border-gray-400 hover:shadow-sm dark:border-gray-800 dark:hover:border-gray-600"
     >
       <h2 className="text-base font-medium text-gray-900 dark:text-gray-100">

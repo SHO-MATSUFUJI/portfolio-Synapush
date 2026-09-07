@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { Header } from '../components/Header'
 import { ContentCard } from '../components/ContentCard'
 import { SearchBox } from '../components/SearchBox'
@@ -7,21 +7,52 @@ import { useContent } from '../content/ContentContext'
 import { useFilteredEntries } from '../content/useFilteredEntries'
 import type { ContentSection } from '../types/content'
 
+function toSection(value: string | null): ContentSection {
+  return value === 'personal' ? 'personal' : 'official'
+}
+
 export function ListPage() {
   const { entries, isLoading, error } = useContent()
-  const [query, setQuery] = useState('')
-  const [section, setSection] = useState<ContentSection>('official')
+  const [searchParams, setSearchParams] = useSearchParams()
+
+  // タブ・検索の状態はコンポーネントのstateではなくURLに持たせる。
+  // 詳細ページ経由で一覧を再マウントしても（一覧に戻るボタン等）状態が消えないようにするため
+  const query = searchParams.get('q') ?? ''
+  const section = toSection(searchParams.get('section'))
 
   const filtered = useFilteredEntries(entries, query, section)
+
+  function handleQueryChange(newQuery: string) {
+    setSearchParams(
+      (prev) => {
+        const next = new URLSearchParams(prev)
+        if (newQuery) next.set('q', newQuery)
+        else next.delete('q')
+        return next
+      },
+      { replace: true },
+    )
+  }
+
+  function handleSectionChange(newSection: ContentSection) {
+    setSearchParams(
+      (prev) => {
+        const next = new URLSearchParams(prev)
+        next.set('section', newSection)
+        return next
+      },
+      { replace: true },
+    )
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
       <Header />
       <main className="mx-auto max-w-3xl px-6 py-8">
         <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <OfficialPersonalToggle value={section} onChange={setSection} />
+          <OfficialPersonalToggle value={section} onChange={handleSectionChange} />
           <div className="sm:w-64">
-            <SearchBox value={query} onChange={setQuery} />
+            <SearchBox value={query} onChange={handleQueryChange} />
           </div>
         </div>
 
