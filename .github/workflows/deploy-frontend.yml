@@ -1,0 +1,96 @@
+name: Deploy frontend
+
+# mainへのマージで frontend/ が変わったとき、Reactアプリをビルドして
+# S3 に同期し、CloudFront のキャッシュを無効化する。
+# AWS への接続は OIDC（synapush-frontend-deploy ロールの AssumeRoleWithWebIdentity）。
+# S3バケットは content/ とビルド成果物を共有しているため、同期時は content/ を除外する。
+# PR 時は AWS アクセス不要のため対象外（信頼ポリシーも main ブランチに限定）。
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'frontend/**'
+      - '.github/workflows/deploy-frontend.yml'
+  workflow_dispatch:
+
+permissions:
+  id-token: write # OIDC トークン発行に必要
+  contents: read
+
+concurrency:
+  group: deploy-frontend
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    env:
+      AWS_REGION: ${{ vars.AWS_REGION }}
+      S3_BUCKET: ${{ vars.S3_BUCKET }}
+      CLOUDFRONT_DISTRIBUTION_ID: ${{ vars.CLOUDFRONT_DISTRIBUTION_ID }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Check required config
+        run: |
+          missing=0
+          for v in AWS_REGION S3_BUCKET CLOUDFRONT_DISTRIBUTION_ID; do
+            if [ -z "${!v}" ]; then echo "::error::repository variable $v is not set"; missing=1; fi
+          done
+          if [ -z "${{ vars.VITE_COGNITO_USER_POOL_ID }}" ]; then
+            echo "::error::repository variable VITE_COGNITO_USER_POOL_ID is not set"; missing=1
+          fi
+          if [ -z "${{ vars.VITE_COGNITO_CLIENT_ID }}" ]; then
+            echo "::error::repository variable VITE_COGNITO_CLIENT_ID is not set"; missing=1
+          fi
+          if [ -z "${{ secrets.VITE_GUEST_EMAIL }}" ]; then
+            echo "::error::secret VITE_GUEST_EMAIL is not set"; missing=1
+          fi
+          if [ -z "${{ secrets.VITE_GUEST_PASSWORD }}" ]; then
+            echo "::error::secret VITE_GUEST_PASSWORD is not set"; missing=1
+          fi
+          if [ -z "${{ secrets.AWS_FRONTEND_DEPLOY_ROLE_ARN }}" ]; then
+            echo "::error::secret AWS_FRONTEND_DEPLOY_ROLE_ARN is not set"; missing=1
+          fi
+          [ "$missing" -eq 0 ]
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install dependencies
+        working-directory: frontend
+        run: npm ci
+
+      - name: Build
+        working-directory: frontend
+        env:
+          # ViteはVITE_*をビルド時にJSバンドルへ埋め込む。
+          # ゲスト用の値も含め、ビルド後の公開バンドルには平文で含まれる（クライアントサイドアプリのため回避不可）
+          VITE_AWS_REGION: ${{ env.AWS_REGION }}
+          VITE_COGNITO_USER_POOL_ID: ${{ vars.VITE_COGNITO_USER_POOL_ID }}
+          VITE_COGNITO_CLIENT_ID: ${{ vars.VITE_COGNITO_CLIENT_ID }}
+          VITE_GUEST_EMAIL: ${{ secrets.VITE_GUEST_EMAIL }}
+          VITE_GUEST_PASSWORD: ${{ secrets.VITE_GUEST_PASSWORD }}
+        run: npm run build
+
+      - name: Configure AWS credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_FRONTEND_DEPLOY_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Sync frontend to S3
+        run: |
+          aws s3 sync frontend/dist/ "s3://${S3_BUCKET}/" --delete --exclude "content/*" --no-progress
+
+      - name: Invalidate CloudFront cache
+        run: |
+          aws cloudfront create-invalidation \
+            --distribution-id "${CLOUDFRONT_DISTRIBUTION_ID}" \
+            --paths "/index.html" "/favicon.svg" "/icons.svg"
