@@ -7,7 +7,7 @@
 //
 // 走査ルール:
 //   - 記事本文は固定ファイル名 index.md のみ（再帰探索）
-//   - 各記事フォルダの attachments/ ディレクトリは走査対象外
+//   - 各記事フォルダの attachments/ ディレクトリと、content/_template/ は走査対象外
 //   - frontmatter は id / title / category / tags / updated の5項目
 //   - section / path / searchText は本関数がフォルダ位置と本文から導出する
 //
@@ -20,10 +20,10 @@ import { fileURLToPath } from 'node:url'
 
 const BODY_KEYWORDS_LIMIT = 300
 
-/** content/ 配下から記事本文（index.md）を再帰収集する。attachments/ は除外。 */
+/** content/ 配下から記事本文（index.md）を再帰収集する。attachments/・_template/ は除外。 */
 function collectArticles(dir, acc = []) {
   for (const name of readdirSync(dir)) {
-    if (name === 'attachments') continue
+    if (name === 'attachments' || name === '_template') continue
     const full = join(dir, name)
     if (statSync(full).isDirectory()) collectArticles(full, acc)
     else if (name === 'index.md') acc.push(full)
