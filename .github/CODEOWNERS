@@ -3,8 +3,13 @@
 # リポジトリの公開範囲（Public）と、アプリ側の Cognito 認証は別レイヤー。
 # このファイルは「誰の承認があればマージできるか」だけを定義する。
 
-# 個人ナレッジ（personal/shoichi/）の変更は本人のみが承認できる。
+# 公式ナレッジ（official/）は組織の責任者が承認するのに対し、個人ナレッジ
+# （personal/shoichi/）は本人の専門性に基づく知見であるため、本人が承認する。
 /content/personal/shoichi/   @SHO-MATSUFUJI
+
+# 本来、アプリ（frontend/）の変更承認は開発者等の部門が担うべきものだが、
+# 現状リポジトリに本人しかいないため、暫定的に本人を承認者とする。
+/frontend/   @SHO-MATSUFUJI
 
 # official/risk-assessment/ の承認者は、実在する2人目のアカウントが
 # できるまでコメントのまま保留する（実効力を持たせない）。
