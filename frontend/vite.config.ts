@@ -30,10 +30,11 @@ function extname(path: string): string {
 }
 
 // content/ 配下から記事本文（固定ファイル名 index.md）だけを再帰収集する。
-// 各記事フォルダの attachments/ は本文ではないので走査対象から除外する。
+// 各記事フォルダの attachments/ は本文ではないので、content/_template/ は記事テンプレートで
+// あり実記事ではないので、それぞれ走査対象から除外する。
 function collectArticles(dir: string, acc: string[] = []): string[] {
   for (const name of readdirSync(dir)) {
-    if (name === 'attachments') continue
+    if (name === 'attachments' || name === '_template') continue
     const full = join(dir, name)
     if (statSync(full).isDirectory()) collectArticles(full, acc)
     else if (name === 'index.md') acc.push(full)
