@@ -8,7 +8,7 @@ data "aws_iam_openid_connect_provider" "github_actions" {
   url = "https://token.actions.githubusercontent.com"
 }
 
-data "aws_iam_policy_document" "content_deploy_trust" {
+data "aws_iam_policy_document" "deploy_trust" {
   statement {
     actions = ["sts:AssumeRoleWithWebIdentity"]
 
@@ -38,7 +38,7 @@ data "aws_iam_policy_document" "content_deploy_trust" {
 
 resource "aws_iam_role" "content_deploy" {
   name               = "synapush-content-deploy"
-  assume_role_policy = data.aws_iam_policy_document.content_deploy_trust.json
+  assume_role_policy = data.aws_iam_policy_document.deploy_trust.json
 }
 
 data "aws_iam_policy_document" "content_deploy_permissions" {
@@ -67,4 +67,43 @@ resource "aws_iam_role_policy" "content_deploy" {
   name   = "synapush-content-deploy-permissions"
   role   = aws_iam_role.content_deploy.id
   policy = data.aws_iam_policy_document.content_deploy_permissions.json
+}
+
+resource "aws_iam_role" "frontend_deploy" {
+  name               = "synapush-frontend-deploy"
+  assume_role_policy = data.aws_iam_policy_document.deploy_trust.json
+}
+
+data "aws_iam_policy_document" "frontend_deploy_permissions" {
+  statement {
+    sid       = "AllowListBucket"
+    actions   = ["s3:ListBucket"]
+    resources = [var.bucket_arn]
+  }
+
+  statement {
+    sid       = "AllowSyncObjects"
+    actions   = ["s3:PutObject", "s3:DeleteObject"]
+    resources = ["${var.bucket_arn}/*"]
+  }
+
+  # content/配下はcontent_deployロールの管理領域のため、フロントエンドのデプロイでは触れない
+  statement {
+    sid       = "DenyContentPath"
+    effect    = "Deny"
+    actions   = ["s3:PutObject", "s3:DeleteObject"]
+    resources = ["${var.bucket_arn}/content/*"]
+  }
+
+  statement {
+    sid       = "AllowCloudFrontInvalidation"
+    actions   = ["cloudfront:CreateInvalidation"]
+    resources = [var.cloudfront_distribution_arn]
+  }
+}
+
+resource "aws_iam_role_policy" "frontend_deploy" {
+  name   = "synapush-frontend-deploy-permissions"
+  role   = aws_iam_role.frontend_deploy.id
+  policy = data.aws_iam_policy_document.frontend_deploy_permissions.json
 }
