@@ -5,6 +5,9 @@
 // 両ブランチが main にマージされたら vite.config.ts を本モジュール import に寄せて重複を解消する。
 // それまでは section / path / searchText の導出ルールを変えたら両方直すこと。
 //
+// collectArticles / parseFrontmatter は frontmatter検証（scripts/validate-frontmatter.mjs）
+// からも import される。ファイル収集・パースの正本はここに一本化している。
+//
 // 走査ルール:
 //   - 記事本文は固定ファイル名 index.md のみ（再帰探索）
 //   - 各記事フォルダの attachments/ ディレクトリと、content/_template/ は走査対象外
@@ -21,7 +24,7 @@ import { fileURLToPath } from 'node:url'
 const BODY_KEYWORDS_LIMIT = 300
 
 /** content/ 配下から記事本文（index.md）を再帰収集する。attachments/・_template/ は除外。 */
-function collectArticles(dir, acc = []) {
+export function collectArticles(dir, acc = []) {
   for (const name of readdirSync(dir)) {
     if (name === 'attachments' || name === '_template') continue
     const full = join(dir, name)
@@ -32,7 +35,7 @@ function collectArticles(dir, acc = []) {
 }
 
 /** --- で囲まれた frontmatter を素朴にパースする（id/title/category/tags/updated 想定）。 */
-function parseFrontmatter(raw) {
+export function parseFrontmatter(raw) {
   const block = raw.match(/^---\r?\n([\s\S]*?)\r?\n---/)
   if (!block) return {}
   const meta = {}
