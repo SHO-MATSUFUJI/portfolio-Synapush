@@ -1,0 +1,30 @@
+name: Validate content
+
+# PRで content/ が変わったとき、frontmatterが docs/frontmatter-spec.md のルールに
+# 沿っているかを機械的に検証する。AWSアクセスは不要（マージ前のチェックのみ）。
+
+on:
+  pull_request:
+    paths:
+      - 'content/**'
+      - 'scripts/generate-manifest.mjs'
+      - 'scripts/validate-frontmatter.mjs'
+      - '.github/workflows/validate-content.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Validate frontmatter
+        run: node scripts/validate-frontmatter.mjs content
