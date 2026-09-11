@@ -5,18 +5,14 @@
 // synapush-knowledge-proposal-template.xlsx に準拠。シート名ではなく並び順
 // （先頭 = 提案フォーム）で対象シートを判定する。
 //
-// exceljsの高レベルAPI（Workbook#xlsx.load/readFile）は、このフォームが使っている
-// 旧形式のセルコメント（入力ヒント）の関連付け解決で例外を投げるため使えない。
-// ストリーミングAPI（stream.xlsx.WorkbookReader）はコメントを読まないため回避できるが、
-// Bufferを直接渡すと読み取れない実装上の制約があるため、いったん /tmp に書き出してから読む。
+// 入力ヒントは「セルコメント」ではなく「データの入力規則」の入力時メッセージで
+// 実装している（テンプレート側の仕様）。旧形式のセルコメントは exceljs の高レベルAPI
+// （Workbook#xlsx.load）が関連付け解決で例外を投げるため使えなかったが、入力時メッセージは
+// この問題を起こさないため、一時ファイル書き出し＋ストリーミングAPIの回避策は不要になった。
 //
 // updated（最終更新日）はフォームに項目がない（提出日をそのまま使う想定）ため、
 // JST基準の今日の日付を自動で設定する。
 
-import { randomUUID } from 'node:crypto'
-import { unlink, writeFile } from 'node:fs/promises'
-import { tmpdir } from 'node:os'
-import { join } from 'node:path'
 import ExcelJS from 'exceljs'
 
 export class ValidationError extends Error {}
@@ -28,44 +24,34 @@ const REQUIRED_LABELS = ['id', 'title', 'category', 'tags', '本文']
  * @returns {Promise<{ id: string, title: string, category: string, tags: string[], updated: string, body: string }>}
  */
 export async function parseExcelToArticle(buffer) {
-  const tmpPath = join(tmpdir(), `submission-${randomUUID()}.xlsx`)
-  await writeFile(tmpPath, buffer)
+  const workbook = new ExcelJS.Workbook()
+  await workbook.xlsx.load(buffer)
 
-  try {
-    const values = {}
-    const reader = new ExcelJS.stream.xlsx.WorkbookReader(tmpPath, {})
-
-    for await (const worksheetReader of reader) {
-      for await (const row of worksheetReader) {
-        // 提案フォームは常に先頭シート。worksheetReader.id は文字列で返るため緩い比較にする
-        if (Number(worksheetReader.id) !== 1) continue
-
-        const label = typeof row.values[1] === 'string' ? row.values[1].trim() : undefined
-        if (label && REQUIRED_LABELS.includes(label)) {
-          values[label] = row.values[2]
-        }
-      }
+  const worksheet = workbook.worksheets[0] // 提案フォームは常に先頭シート
+  const values = {}
+  worksheet.eachRow((row) => {
+    const label = typeof row.values[1] === 'string' ? row.values[1].trim() : undefined
+    if (label && REQUIRED_LABELS.includes(label)) {
+      values[label] = row.values[2]
     }
+  })
 
-    for (const label of REQUIRED_LABELS) {
-      if (values[label] === undefined || values[label] === '') {
-        throw new ValidationError(`提案フォームの "${label}" が入力されていません`)
-      }
+  for (const label of REQUIRED_LABELS) {
+    if (values[label] === undefined || values[label] === '') {
+      throw new ValidationError(`提案フォームの "${label}" が入力されていません`)
     }
+  }
 
-    return {
-      id: String(values.id).trim(),
-      title: String(values.title).trim(),
-      category: String(values.category).trim(),
-      tags: String(values.tags)
-        .split(/[,、]/)
-        .map((tag) => tag.trim())
-        .filter(Boolean),
-      updated: todayJst(),
-      body: String(values['本文']).trim(),
-    }
-  } finally {
-    await unlink(tmpPath)
+  return {
+    id: String(values.id).trim(),
+    title: String(values.title).trim(),
+    category: String(values.category).trim(),
+    tags: String(values.tags)
+      .split(/[,、]/)
+      .map((tag) => tag.trim())
+      .filter(Boolean),
+    updated: todayJst(),
+    body: String(values['本文']).trim(),
   }
 }
 
