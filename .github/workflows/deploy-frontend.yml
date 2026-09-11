@@ -3,7 +3,7 @@ name: Deploy frontend
 # mainへのマージで frontend/ が変わったとき、Reactアプリをビルドして
 # S3 に同期し、CloudFront のキャッシュを無効化する。
 # AWS への接続は OIDC（synapush-frontend-deploy ロールの AssumeRoleWithWebIdentity）。
-# S3バケットは content/ とビルド成果物を共有しているため、同期時は content/ を除外する。
+# S3バケットは content/・templates/ とビルド成果物を共有しているため、同期時はどちらも除外する。
 # PR 時は AWS アクセス不要のため対象外（信頼ポリシーも main ブランチに限定）。
 
 on:
@@ -87,7 +87,7 @@ jobs:
 
       - name: Sync frontend to S3
         run: |
-          aws s3 sync frontend/dist/ "s3://${S3_BUCKET}/" --delete --exclude "content/*" --no-progress
+          aws s3 sync frontend/dist/ "s3://${S3_BUCKET}/" --delete --exclude "content/*" --exclude "templates/*" --no-progress
 
       - name: Invalidate CloudFront cache
         run: |
