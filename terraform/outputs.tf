@@ -31,3 +31,13 @@ output "cognito_user_pool_client_id" {
   description = "CognitoアプリクライアントID（GitHub Actionsリポジトリ変数 VITE_COGNITO_CLIENT_ID に設定）"
   value       = module.auth.user_pool_client_id
 }
+
+output "submission_api_endpoint" {
+  description = "提案フォーム送信先APIエンドポイント（フロントエンドの環境変数に設定）"
+  value       = module.submission.api_endpoint
+}
+
+output "submission_github_app_key_secret_arn" {
+  description = "GitHub App秘密鍵(.pem)の投入先Secrets ManagerシークレットARN（terraform apply後、aws secretsmanager put-secret-valueで手動投入する）"
+  value       = module.submission.github_app_private_key_secret_arn
+}
