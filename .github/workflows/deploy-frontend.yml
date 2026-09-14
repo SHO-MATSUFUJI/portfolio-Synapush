@@ -45,6 +45,9 @@ jobs:
           if [ -z "${{ vars.VITE_COGNITO_CLIENT_ID }}" ]; then
             echo "::error::repository variable VITE_COGNITO_CLIENT_ID is not set"; missing=1
           fi
+          if [ -z "${{ vars.VITE_SUBMISSION_API_ENDPOINT }}" ]; then
+            echo "::error::repository variable VITE_SUBMISSION_API_ENDPOINT is not set"; missing=1
+          fi
           if [ -z "${{ secrets.VITE_GUEST_EMAIL }}" ]; then
             echo "::error::secret VITE_GUEST_EMAIL is not set"; missing=1
           fi
@@ -75,6 +78,7 @@ jobs:
           VITE_AWS_REGION: ${{ env.AWS_REGION }}
           VITE_COGNITO_USER_POOL_ID: ${{ vars.VITE_COGNITO_USER_POOL_ID }}
           VITE_COGNITO_CLIENT_ID: ${{ vars.VITE_COGNITO_CLIENT_ID }}
+          VITE_SUBMISSION_API_ENDPOINT: ${{ vars.VITE_SUBMISSION_API_ENDPOINT }}
           VITE_GUEST_EMAIL: ${{ secrets.VITE_GUEST_EMAIL }}
           VITE_GUEST_PASSWORD: ${{ secrets.VITE_GUEST_PASSWORD }}
         run: npm run build

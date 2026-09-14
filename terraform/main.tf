@@ -18,4 +18,8 @@ module "submission" {
 
   user_pool_id        = module.auth.user_pool_id
   user_pool_client_id = module.auth.user_pool_client_id
+  allowed_origins = [
+    "https://${module.cdn.cloudfront_domain_name}",
+    "http://localhost:5173", # フロントエンドのローカル開発サーバー(vite dev)用
+  ]
 }
