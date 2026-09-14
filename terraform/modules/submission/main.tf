@@ -86,6 +86,15 @@ resource "aws_lambda_function" "submission" {
 resource "aws_apigatewayv2_api" "http" {
   name          = "synapush-submission"
   protocol_type = "HTTP"
+
+  # フロントエンド（CloudFrontドメイン）とAPI(execute-api)はオリジンが異なるため、
+  # ブラウザからのfetchにはCORSが必要。Authorizationヘッダー付きリクエストは
+  # プリフライト(OPTIONS)が飛ぶため、HTTP APIのCORS機能で自動応答させる。
+  cors_configuration {
+    allow_origins = var.allowed_origins
+    allow_methods = ["POST"]
+    allow_headers = ["authorization", "content-type"]
+  }
 }
 
 resource "aws_apigatewayv2_stage" "default" {

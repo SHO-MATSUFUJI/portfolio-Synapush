@@ -8,6 +8,11 @@ variable "user_pool_client_id" {
   type        = string
 }
 
+variable "allowed_origins" {
+  description = "CORSで許可するフロントエンドのオリジン一覧（本番のCloudFrontドメイン＋ローカル開発用）"
+  type        = list(string)
+}
+
 variable "github_repository" {
   description = "記事PRの作成先GitHubリポジトリ（owner/repo形式）"
   type        = string
