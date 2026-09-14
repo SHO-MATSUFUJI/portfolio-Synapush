@@ -19,6 +19,9 @@ crash.log
 .aws-sam/
 *.pem
 
+# Lambdaビルド成果物（terraform applyの前にnpm run buildで生成する）
+*.zip
+
 # IDE
 .vscode/
 .idea/

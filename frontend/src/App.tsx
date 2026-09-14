@@ -5,6 +5,7 @@ import { ContentProvider } from './content/ContentContext'
 import { DetailPage } from './pages/DetailPage'
 import { ListPage } from './pages/ListPage'
 import { LoginPage } from './pages/LoginPage'
+import { ProposePage } from './pages/ProposePage'
 
 export default function App() {
   return (
@@ -26,6 +27,14 @@ export default function App() {
               element={
                 <ProtectedRoute>
                   <DetailPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/propose"
+              element={
+                <ProtectedRoute>
+                  <ProposePage />
                 </ProtectedRoute>
               }
             />
