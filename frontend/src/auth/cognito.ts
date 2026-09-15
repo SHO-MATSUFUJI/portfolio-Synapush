@@ -54,7 +54,9 @@ export type LoginResult =
   | { status: 'newPasswordRequired'; cognitoUser: CognitoUser; userAttributes: Record<string, unknown> }
 
 export function login(email: string, password: string): Promise<LoginResult> {
-  const cognitoUser = new CognitoUser({ Username: email, Pool: getUserPool() })
+  // Poolに渡したStorageは自動継承されない（CognitoUser側は未指定時localStorageにフォールバックする）ため、
+  // getCurrentSessionと同じsessionStorageを明示的に指定する
+  const cognitoUser = new CognitoUser({ Username: email, Pool: getUserPool(), Storage: window.sessionStorage })
   const authDetails = new AuthenticationDetails({ Username: email, Password: password })
 
   return new Promise((resolve, reject) => {
