@@ -39,10 +39,10 @@ resource "aws_cloudfront_distribution" "knowledge_contents" {
 
   default_cache_behavior {
     allowed_methods        = ["GET", "HEAD"]
-    cached_methods          = ["GET", "HEAD"]
-    target_origin_id        = "s3-knowledge-contents"
-    viewer_protocol_policy  = "redirect-to-https"
-    cache_policy_id         = data.aws_cloudfront_cache_policy.caching_optimized.id
+    cached_methods         = ["GET", "HEAD"]
+    target_origin_id       = "s3-knowledge-contents"
+    viewer_protocol_policy = "redirect-to-https"
+    cache_policy_id        = data.aws_cloudfront_cache_policy.caching_optimized.id
   }
 
   restrictions {
@@ -54,6 +54,21 @@ resource "aws_cloudfront_distribution" "knowledge_contents" {
   viewer_certificate {
     cloudfront_default_certificate = true
   }
+
+  custom_error_response {
+    error_code            = 404
+    response_code         = 200
+    response_page_path    = "/index.html"
+    error_caching_min_ttl = 0
+  }
+
+  custom_error_response {
+    error_code            = 403
+    response_code         = 200
+    response_page_path    = "/index.html"
+    error_caching_min_ttl = 0
+  }
+
 }
 
 data "aws_iam_policy_document" "knowledge_contents_bucket_policy" {
