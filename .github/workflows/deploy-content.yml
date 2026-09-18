@@ -66,10 +66,12 @@ jobs:
           aws s3 cp "s3://${S3_BUCKET}/content/" "s3://${S3_BUCKET}/content/" \
             --recursive --exclude "*" --include "*.md" \
             --content-type "text/plain; charset=utf-8" \
+            --cache-control "max-age=0, no-cache" \
             --metadata-directive REPLACE --no-progress
 
           aws s3 cp content/manifest.json "s3://${S3_BUCKET}/content/manifest.json" \
-            --content-type "application/json; charset=utf-8" --no-progress
+            --content-type "application/json; charset=utf-8" \
+            --cache-control "max-age=0, no-cache" --no-progress
 
       - name: Invalidate CloudFront cache
         run: |
