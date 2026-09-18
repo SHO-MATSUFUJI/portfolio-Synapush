@@ -14,6 +14,8 @@ npm-debug.log*
 crash.log
 *.tfvars
 !*.tfvars.example
+*.tfplan
+tfplan.out
 
 # AWS
 .aws-sam/
