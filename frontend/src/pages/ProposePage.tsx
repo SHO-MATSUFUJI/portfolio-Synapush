@@ -20,6 +20,9 @@ export function ProposePage() {
   const [file, setFile] = useState<File | null>(null)
   const [state, setState] = useState<SubmitState>({ status: 'idle' })
 
+  // ゲストアカウントによる送信は、このページでは止めない。送信するとLambda側が403を返し、
+  // 下のエラー表示にそのメッセージ（「ゲストアカウントは提案できません」）がそのまま出る
+
   async function handleSubmit(e: FormEvent) {
     e.preventDefault()
     if (!file) return

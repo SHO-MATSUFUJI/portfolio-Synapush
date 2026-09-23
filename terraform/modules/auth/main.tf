@@ -15,6 +15,12 @@ resource "aws_cognito_user_pool" "main" {
   mfa_configuration = "OFF"
 }
 
+resource "aws_cognito_user_group" "guest" {
+  name         = "guest"
+  user_pool_id = aws_cognito_user_pool.main.id
+  description  = "閲覧専用のゲストアカウント。提案APIはこのグループをLambda側で拒否する"
+}
+
 resource "aws_cognito_user_pool_client" "web" {
   name         = "${var.user_pool_name}-web-client"
   user_pool_id = aws_cognito_user_pool.main.id

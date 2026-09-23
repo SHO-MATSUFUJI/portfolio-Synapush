@@ -41,7 +41,24 @@ function response(statusCode, body) {
   }
 }
 
+// API Gateway(HTTP API)のJWTオーソライザーは、cognito:groups(本来は配列)を
+// "[group1, group2]" 形式の文字列にして渡してくる。ゲストグループはポートフォリオ閲覧専用のため
+// 提案APIの実行を拒否する
+function isGuest(event) {
+  const raw = event.requestContext?.authorizer?.jwt?.claims?.['cognito:groups']
+  if (!raw) return false
+  const groups = raw
+    .replace(/^\[|\]$/g, '')
+    .split(',')
+    .map((group) => group.trim())
+    .filter(Boolean)
+  return groups.includes('guest')
+}
+
 export async function handler(event) {
+  if (isGuest(event)) {
+    return response(403, { message: 'ゲストアカウントは提案できません' })
+  }
   if (!event.body) return response(400, { message: 'リクエストボディが空です' })
 
   let article
