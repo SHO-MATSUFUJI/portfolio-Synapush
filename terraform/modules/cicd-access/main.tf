@@ -87,12 +87,15 @@ data "aws_iam_policy_document" "frontend_deploy_permissions" {
     resources = ["${var.bucket_arn}/*"]
   }
 
-  # content/配下はcontent_deployロールの管理領域のため、フロントエンドのデプロイでは触れない
+  # content/配下はcontent_deployロールの管理領域、templates/配下はExcelテンプレートの格納先のため、フロントエンドのデプロイでは触れない
   statement {
-    sid       = "DenyContentPath"
-    effect    = "Deny"
-    actions   = ["s3:PutObject", "s3:DeleteObject"]
-    resources = ["${var.bucket_arn}/content/*"]
+    sid     = "DenyPath"
+    effect  = "Deny"
+    actions = ["s3:PutObject", "s3:DeleteObject"]
+    resources = [
+      "${var.bucket_arn}/content/*",
+      "${var.bucket_arn}/templates/*",
+    ]
   }
 
   statement {
