@@ -6,8 +6,11 @@ export function Header() {
 
   return (
     <header className="flex items-center justify-between border-b border-gray-200 px-6 py-4 dark:border-gray-800">
-      <Link to="/" className="text-lg font-semibold text-gray-900 dark:text-gray-100">
-        Synapush
+      <Link to="/" className="flex items-center gap-2">
+        <span className="text-lg font-semibold text-gray-900 dark:text-gray-100">Synapush</span>
+        <span className="whitespace-nowrap rounded-full bg-blue-50 px-2.5 py-0.5 text-sm font-medium text-blue-700 ring-1 ring-blue-200 dark:bg-blue-950 dark:text-blue-300 dark:ring-blue-800">
+          社内ナレッジ共有アプリ
+        </span>
       </Link>
       <div className="flex items-center gap-4">
         {/*
