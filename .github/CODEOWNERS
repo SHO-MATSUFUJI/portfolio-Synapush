@@ -14,3 +14,7 @@
 # official/risk-assessment/ の承認者は、実在する2人目のアカウントが
 # できるまでコメントのまま保留する（実効力を持たせない）。
 # /content/official/risk-assessment/   @manufacturing-lead
+
+# 運営（content/official/operations/）の承認者
+# 本来は各組織の責任者が担うが、現状は本人のみのため暫定的に本人を承認者とする
+/content/official/operations/   @SHO-MATSUFUJI
