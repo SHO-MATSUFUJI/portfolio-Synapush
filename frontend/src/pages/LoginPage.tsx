@@ -112,9 +112,12 @@ export function LoginPage() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-gray-50 dark:bg-gray-950">
       <div className="w-full max-w-sm rounded-lg border border-gray-200 bg-white p-8 dark:border-gray-800 dark:bg-gray-900">
-        <h1 className="mb-6 text-xl font-semibold text-gray-900 dark:text-gray-100">
-          Synapush
-        </h1>
+        <div className="mb-6 flex flex-wrap items-center gap-2">
+          <h1 className="text-xl font-semibold text-gray-900 dark:text-gray-100">Synapush</h1>
+          <span className="whitespace-nowrap rounded-full bg-blue-50 px-2.5 py-0.5 text-sm font-medium text-blue-700 ring-1 ring-blue-200 dark:bg-blue-950 dark:text-blue-300 dark:ring-blue-800">
+            社内ナレッジ共有アプリ
+          </span>
+        </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
