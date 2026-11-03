@@ -55,7 +55,7 @@ export function DetailPage() {
               {entry.title}
             </h1>
             <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-              {entry.category} ・ 更新日 {entry.updated}
+              {entry.categoryLabel} ・ 更新日 {entry.updated}
             </p>
           </div>
         )}

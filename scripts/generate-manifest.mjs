@@ -1,18 +1,21 @@
-// content/ 配下の記事から manifest.json を生成する。
+// content/ 配下の記事と対応表（content/structure.json）から manifest.json を生成する。
 //
-// この関数が manifest 生成ルールの正本。CI（.github/workflows/deploy-content.yml）から呼ばれる。
-// 開発サーバー（frontend/vite.config.ts）側にも同じ導出ロジックがインラインで入っている。
-// 両ブランチが main にマージされたら vite.config.ts を本モジュール import に寄せて重複を解消する。
-// それまでは section / path / searchText の導出ルールを変えたら両方直すこと。
+// この関数が manifest 生成ルールの正本。CI（.github/workflows/deploy-content.yml）と
+// 開発サーバー（frontend/vite.config.ts）の両方から呼ばれる。
 //
-// collectArticles / parseFrontmatter は frontmatter検証（scripts/validate-frontmatter.mjs）
-// からも import される。ファイル収集・パースの正本はここに一本化している。
+// collectArticles / parseFrontmatter / loadStructure / findLocation は frontmatter検証
+// （scripts/validate-frontmatter.mjs）からも import される。
+//
+// フォルダ構成: content/<section>/<owner>/<category>/<記事フォルダ>/index.md
+//   各階層のフォルダ名がID、表示名は対応表で定義する。
 //
 // 走査ルール:
 //   - 記事本文は固定ファイル名 index.md のみ（再帰探索）
 //   - 各記事フォルダの attachments/ ディレクトリと、content/_template/ は走査対象外
 //   - frontmatter は id / title / category / tags / updated の5項目
-//   - section / path / searchText は本関数がフォルダ位置と本文から導出する
+//   - section / owner / 表示名 / path / searchText は本関数がフォルダ位置・対応表・本文から導出する
+//
+// 出力: { tree: 対応表の階層（記事が無い枠も含む）, entries: 記事一覧 }
 //
 // CLI: node scripts/generate-manifest.mjs [contentDir=content] [outFile]
 //   outFile を省略すると標準出力へ書き出す。
@@ -22,6 +25,24 @@ import { join, relative, resolve, sep } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 const BODY_KEYWORDS_LIMIT = 300
+export const STRUCTURE_FILE = 'structure.json'
+
+/** 対応表（content/structure.json）を読み込む。 */
+export function loadStructure(contentRoot) {
+  return JSON.parse(readFileSync(join(contentRoot, STRUCTURE_FILE), 'utf-8'))
+}
+
+/**
+ * content/ からの相対パス（例: personal/matsufuji-shoichi/risk-assessment/ra-ch1/index.md）を
+ * 対応表に照らし、該当する section / owner / category を返す。見つからない階層は undefined。
+ */
+export function findLocation(structure, path) {
+  const [sectionId, ownerId, categoryId] = path.split('/')
+  const section = structure.sections.find((s) => s.id === sectionId)
+  const owner = section?.owners.find((o) => o.id === ownerId)
+  const category = owner?.categories.find((c) => c.id === categoryId)
+  return { sectionId, ownerId, categoryId, section, owner, category }
+}
 
 /** content/ 配下から記事本文（index.md）を再帰収集する。attachments/・_template/ は除外。 */
 export function collectArticles(dir, acc = []) {
@@ -67,10 +88,12 @@ function bodyKeywords(raw) {
 
 /**
  * @param {string} contentRoot content/ ディレクトリの絶対 or 相対パス
- * @returns {Array<{id,title,category,section,tags,updated,path,searchText}>}
+ * @returns {{ tree: Array<{id,label,owners}>, entries: Array<{id,title,category,categoryLabel,section,owner,ownerLabel,tags,updated,path,searchText}> }}
  */
 export function generateManifest(contentRoot) {
-  if (!existsSync(contentRoot)) return []
+  if (!existsSync(contentRoot)) return { tree: [], entries: [] }
+
+  const structure = loadStructure(contentRoot)
 
   const entries = collectArticles(contentRoot).map((file) => {
     const raw = readFileSync(file, 'utf-8')
@@ -78,11 +101,17 @@ export function generateManifest(contentRoot) {
     const path = relative(contentRoot, file).split(sep).join('/')
     const title = typeof meta.title === 'string' ? meta.title : ''
     const tags = Array.isArray(meta.tags) ? meta.tags : []
+    const location = findLocation(structure, path)
     return {
       id: typeof meta.id === 'string' ? meta.id : '',
       title,
-      category: typeof meta.category === 'string' ? meta.category : '',
-      section: path.startsWith('personal/') ? 'personal' : 'official',
+      // category はフォルダ名と一致することを validate-frontmatter で保証している
+      category: location.categoryId,
+      // 対応表に無い場合はIDをそのまま表示名にする（validate-frontmatter でエラーになる想定）
+      categoryLabel: location.category?.label ?? location.categoryId,
+      section: location.sectionId,
+      owner: location.ownerId,
+      ownerLabel: location.owner?.label ?? location.ownerId,
       tags,
       updated: typeof meta.updated === 'string' ? meta.updated : '',
       path,
@@ -91,7 +120,7 @@ export function generateManifest(contentRoot) {
   })
 
   entries.sort((a, b) => (a.updated === b.updated ? a.id.localeCompare(b.id) : a.updated < b.updated ? 1 : -1))
-  return entries
+  return { tree: structure.sections, entries }
 }
 
 // CLI として直接実行されたときだけ動く（他ファイルから import されたときは動かない）

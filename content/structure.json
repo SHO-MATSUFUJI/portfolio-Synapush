@@ -1,0 +1,44 @@
+{
+  "sections": [
+    {
+      "id": "official",
+      "label": "公式",
+      "owners": [
+        {
+          "id": "synapush-operations",
+          "label": "運営",
+          "categories": [
+            { "id": "user-guide", "label": "案内" }
+          ]
+        },
+        {
+          "id": "general-affairs",
+          "label": "総務",
+          "categories": [
+            { "id": "company-regulations", "label": "社内規定" },
+            { "id": "company-announcements", "label": "お知らせ" }
+          ]
+        },
+        {
+          "id": "manufacturing",
+          "label": "製造",
+          "categories": []
+        }
+      ]
+    },
+    {
+      "id": "personal",
+      "label": "個人",
+      "owners": [
+        {
+          "id": "matsufuji-shoichi",
+          "label": "松藤将一",
+          "categories": [
+            { "id": "risk-assessment", "label": "リスクアセスメント" },
+            { "id": "work-practices", "label": "仕事の進め方" }
+          ]
+        }
+      ]
+    }
+  ]
+}

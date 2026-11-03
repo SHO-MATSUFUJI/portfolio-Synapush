@@ -16,7 +16,7 @@ export function ContentCard({ entry }: { entry: ManifestEntry }) {
         {entry.title}
       </h2>
       <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-        {entry.category} ・ 更新日 {entry.updated}
+        更新日 {entry.updated}
       </p>
       {entry.tags.length > 0 && (
         <ul className="mt-2 flex flex-wrap gap-1.5">

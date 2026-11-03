@@ -1,9 +1,10 @@
 import { useSearchParams } from 'react-router-dom'
 import { Header } from '../components/Header'
-import { ContentCard } from '../components/ContentCard'
+import { ContentTree } from '../components/ContentTree'
 import { SearchBox } from '../components/SearchBox'
 import { OfficialPersonalToggle } from '../components/OfficialPersonalToggle'
 import { useContent } from '../content/ContentContext'
+import { hitKeys, parseOpenKeys } from '../content/openKeys'
 import { useFilteredEntries } from '../content/useFilteredEntries'
 import type { ContentSection } from '../types/content'
 
@@ -12,15 +13,18 @@ function toSection(value: string | null): ContentSection {
 }
 
 export function ListPage() {
-  const { entries, isLoading, error } = useContent()
+  const { tree, entries, isLoading, error } = useContent()
   const [searchParams, setSearchParams] = useSearchParams()
 
-  // タブ・検索の状態はコンポーネントのstateではなくURLに持たせる。
+  // タブ・検索・開閉の状態はコンポーネントのstateではなくURLに持たせる。
   // 詳細ページ経由で一覧を再マウントしても（一覧に戻るボタン等）状態が消えないようにするため
   const query = searchParams.get('q') ?? ''
   const section = toSection(searchParams.get('section'))
+  const openKeys = parseOpenKeys(searchParams.get('open'))
 
   const filtered = useFilteredEntries(entries, query, section)
+  const sectionTree = tree.find((s) => s.id === section)
+  const isSearching = query.trim() !== ''
 
   function handleQueryChange(newQuery: string) {
     setSearchParams(
@@ -28,6 +32,26 @@ export function ListPage() {
         const next = new URLSearchParams(prev)
         if (newQuery) next.set('q', newQuery)
         else next.delete('q')
+        // 検索中はヒットした記事を含む枠を開く（検索語が変わるたびに置き換える）。
+        // 検索語を消したら、すべて閉じた初期状態に戻す
+        const keys = newQuery.trim() ? hitKeys(entries, newQuery) : []
+        if (keys.length > 0) next.set('open', keys.join(','))
+        else next.delete('open')
+        return next
+      },
+      { replace: true },
+    )
+  }
+
+  function handleToggle(key: string) {
+    setSearchParams(
+      (prev) => {
+        const next = new URLSearchParams(prev)
+        const keys = parseOpenKeys(prev.get('open'))
+        if (keys.has(key)) keys.delete(key)
+        else keys.add(key)
+        if (keys.size > 0) next.set('open', [...keys].join(','))
+        else next.delete('open')
         return next
       },
       { replace: true },
@@ -58,17 +82,19 @@ export function ListPage() {
 
         {isLoading && <p className="text-sm text-gray-500">読み込み中...</p>}
         {error && <p className="text-sm text-red-600 dark:text-red-400">{error}</p>}
-        {!isLoading && !error && filtered.length === 0 && (
+        {!isLoading && !error && isSearching && filtered.length === 0 && (
           <p className="text-sm text-gray-500">該当するナレッジがありません</p>
         )}
 
-        <ul className="space-y-3">
-          {filtered.map((entry) => (
-            <li key={entry.id}>
-              <ContentCard entry={entry} />
-            </li>
-          ))}
-        </ul>
+        {!isLoading && !error && sectionTree && (
+          <ContentTree
+            section={sectionTree}
+            entries={filtered}
+            isSearching={isSearching}
+            openKeys={openKeys}
+            onToggle={handleToggle}
+          />
+        )}
       </main>
     </div>
   )
