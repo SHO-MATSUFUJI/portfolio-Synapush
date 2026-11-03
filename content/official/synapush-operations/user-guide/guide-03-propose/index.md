@@ -1,7 +1,7 @@
 ---
 id: guide-03-propose
 title: ナレッジの提案のしかた
-category: guide
+category: user-guide
 tags: [案内, 提案, テンプレート]
 updated: 2026-10-27
 ---

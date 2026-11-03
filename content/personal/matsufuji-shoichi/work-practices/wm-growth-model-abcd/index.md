@@ -1,7 +1,7 @@
 ---
 id: wm-growth-model-abcd
 title: 第3章：本質型への成長モデル（A→B→C→D）
-category: work-management
+category: work-practices
 tags: [成長モデル, 応用力, 目的理解]
 updated: 2026-09-19
 ---

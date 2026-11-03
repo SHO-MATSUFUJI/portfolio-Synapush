@@ -4,8 +4,8 @@
 # このファイルは「誰の承認があればマージできるか」だけを定義する。
 
 # 公式ナレッジ（official/）は組織の責任者が承認するのに対し、個人ナレッジ
-# （personal/shoichi/）は本人の専門性に基づく知見であるため、本人が承認する。
-/content/personal/shoichi/   @SHO-MATSUFUJI
+# （personal/matsufuji-shoichi/）は本人の専門性に基づく知見であるため、本人が承認する。
+/content/personal/matsufuji-shoichi/   @SHO-MATSUFUJI
 
 # 本来、アプリ（frontend/）の変更承認は開発者等の部門が担うべきものだが、
 # 現状リポジトリに本人しかいないため、暫定的に本人を承認者とする。
@@ -15,6 +15,6 @@
 # できるまでコメントのまま保留する（実効力を持たせない）。
 # /content/official/risk-assessment/   @manufacturing-lead
 
-# 運営（content/official/operations/）の承認者
+# 運営（content/official/synapush-operations/）の承認者
 # 本来は各組織の責任者が担うが、現状は本人のみのため暫定的に本人を承認者とする
-/content/official/operations/   @SHO-MATSUFUJI
+/content/official/synapush-operations/   @SHO-MATSUFUJI

@@ -1,7 +1,7 @@
 ---
 id: wm-common-language-phrases
 title: 第5章：現場で使える言葉と問いかけ
-category: work-management
+category: work-practices
 tags: [合言葉, 問いかけ, コミュニケーション]
 updated: 2026-09-18
 ---

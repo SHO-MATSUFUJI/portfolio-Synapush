@@ -1,7 +1,7 @@
 ---
 id: wm-situational-action-guide
 title: 第4章：場面別 行動指針（状況に応じた初動の選び方）
-category: work-management
+category: work-practices
 tags: [初動, 判断軸, 場面別]
 updated: 2026-09-18
 ---

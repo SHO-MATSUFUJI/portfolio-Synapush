@@ -1,7 +1,7 @@
 ---
 id: wm-role-based-work-styles
 title: 第2章：役割ごとの仕事の型（新人・中堅・主任・係長）
-category: work-management
+category: work-practices
 tags: [役割, 新人, 中堅, 主任, 係長]
 updated: 2026-09-19
 ---

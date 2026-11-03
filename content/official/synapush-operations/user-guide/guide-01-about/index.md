@@ -1,7 +1,7 @@
 ---
 id: guide-01-about
 title: Synapush（シナプッシュ）とは
-category: guide
+category: user-guide
 tags: [案内, Synapush, 概要]
 updated: 2026-10-27
 ---
