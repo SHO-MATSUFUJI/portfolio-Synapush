@@ -1,7 +1,7 @@
 ---
 id: guide-02-read
 title: ナレッジの探し方・読み方
-category: guide
+category: user-guide
 tags: [案内, 閲覧, タブ]
 updated: 2026-10-27
 ---

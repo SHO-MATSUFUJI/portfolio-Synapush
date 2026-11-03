@@ -1,7 +1,7 @@
 ---
 id: wm-goal-procedure-consult
 title: 第1章：仕事の進め方の本質（三原則：ゴール・手順・相談）
-category: work-management
+category: work-practices
 tags: [三原則, ゴール, 手順, 相談]
 updated: 2026-09-19
 ---
