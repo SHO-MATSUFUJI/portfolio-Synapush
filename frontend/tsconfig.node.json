@@ -5,6 +5,8 @@
     "lib": ["ES2023"],
     "types": ["node"],
     "skipLibCheck": true,
+    /* vite.config.ts から scripts/generate-manifest.mjs（manifest生成の正本）を読み込むため */
+    "allowJs": true,
 
     /* Bundler mode */
     "module": "nodenext",
